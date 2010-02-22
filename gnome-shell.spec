@@ -2,7 +2,7 @@
 
 Name:           gnome-shell
 Version:        2.28.1
-Release:        0.1.%{alphatag}
+Release:        0.2.%{alphatag}
 Summary:        Window management and application launching for GNOME
 
 Group:          User Interface/Desktops
@@ -57,6 +57,8 @@ Requires:       pygobject2
 Requires:       glx-utils
 # needed for loading SVG's via gdk-pixbuf
 Requires:       librsvg2
+# needed as it is now split from Clutter
+Requires:       json-glib
 Requires:       mutter >= %{mutter_version}
 # These are needed to run gnome-shell nested Xephyr mode, but that's a
 # developer-only thing and unlikely to be interesting for a normal user
@@ -136,6 +138,10 @@ gconftool-2 --makefile-install-rule \
   > /dev/null || :
 
 %changelog
+* Sun Feb 21 2010 Bastien Nocera <bnocera@redhat.com> 2.28.1-0.2.20100128git
+- Require json-glib
+- Rebuild for new clutter with json split out
+
 * Thu Jan 28 2010 Adam Miller <maxamillion@fedoraproject.org> - 2.28.1-0.1.20100128git
 - New git snapshot
 - Fixed Version for alphatag use
