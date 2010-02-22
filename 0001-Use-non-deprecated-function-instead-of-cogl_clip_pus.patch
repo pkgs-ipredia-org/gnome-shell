@@ -20,8 +20,8 @@ index bcc27de..c6a9915 100644
  
 -  cogl_clip_push (0, 0, width, height);
 +  cogl_clip_push_rectangle (0, 0, width, height);
-   cogl_translate ((int)(0.5 + x_align_factor * (width - child_width)),
-                   (int)(0.5 + y_align_factor * (height - child_height)),
+   cogl_translate ((int)(0.5 + x_align * (width - child_width)),
+                   (int)(0.5 + y_align * (height - child_height)),
                    0);
 diff --git a/src/st/st-box-layout.c b/src/st/st-box-layout.c
 index 5062c07..8d2cb58 100644
