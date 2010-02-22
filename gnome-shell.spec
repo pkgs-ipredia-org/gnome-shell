@@ -65,6 +65,9 @@ Requires:       mutter >= %{mutter_version}
 #Requires:       xorg-x11-server-Xephyr
 #Requires:       xorg-x11-xauth
 
+# https://bugzilla.gnome.org/show_bug.cgi?id=610679
+Patch0: 0001-Use-non-deprecated-function-instead-of-cogl_clip_pus.patch
+
 %description
 GNOME Shell provides core user interface functions for the GNOME 3 desktop,
 like switching to windows and launching applications. GNOME Shell takes
@@ -76,8 +79,11 @@ easy to use experience.
 ## The git repository snapshot has a different directory name:
 #%setup -q
 %setup -q -n gnome-shell
+
+%patch0 -p1 -b .deprecation
+
 ## Needed to build the git tree
-/bin/sh autogen.sh
+NOCONFIGURE=1 /bin/sh autogen.sh
 
 %build
 %configure
@@ -141,6 +147,7 @@ gconftool-2 --makefile-install-rule \
 * Sun Feb 21 2010 Bastien Nocera <bnocera@redhat.com> 2.28.1-0.2.20100128git
 - Require json-glib
 - Rebuild for new clutter with json split out
+- Fix deprecation in COGL
 
 * Thu Jan 28 2010 Adam Miller <maxamillion@fedoraproject.org> - 2.28.1-0.1.20100128git
 - New git snapshot

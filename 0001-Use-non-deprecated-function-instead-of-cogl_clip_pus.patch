@@ -1,0 +1,62 @@
+From 7627b8cc28e17e4f28fcb90e7191e0086bf6afd8 Mon Sep 17 00:00:00 2001
+From: Bastien Nocera <hadess@hadess.net>
+Date: Mon, 22 Feb 2010 11:28:54 +0000
+Subject: [PATCH] Use non-deprecated function instead of cogl_clip_push()
+
+cogl_clip_push is deprecated, use cogl_clip_push_rectangle
+instead.
+---
+ src/shell-slicer.c     |    2 +-
+ src/st/st-box-layout.c |   16 ++++++++--------
+ 2 files changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/src/shell-slicer.c b/src/shell-slicer.c
+index bcc27de..c6a9915 100644
+--- a/src/shell-slicer.c
++++ b/src/shell-slicer.c
+@@ -119,7 +119,7 @@ shell_slicer_paint_child (ShellSlicer *self)
+ 
+   cogl_push_matrix ();
+ 
+-  cogl_clip_push (0, 0, width, height);
++  cogl_clip_push_rectangle (0, 0, width, height);
+   cogl_translate ((int)(0.5 + x_align_factor * (width - child_width)),
+                   (int)(0.5 + y_align_factor * (height - child_height)),
+                   0);
+diff --git a/src/st/st-box-layout.c b/src/st/st-box-layout.c
+index 5062c07..8d2cb58 100644
+--- a/src/st/st-box-layout.c
++++ b/src/st/st-box-layout.c
+@@ -1120,10 +1120,10 @@ st_box_layout_paint (ClutterActor *actor)
+    * the borders and background stay in place; after drawing the borders and
+    * background, we clip to the content area */
+   if (priv->hadjustment || priv->vadjustment)
+-    cogl_clip_push ((int)content_box.x1,
+-                    (int)content_box.y1,
+-                    (int)content_box.x2 - (int)content_box.x1,
+-                    (int)content_box.y2 - (int)content_box.y1);
++    cogl_clip_push_rectangle ((int)content_box.x1,
++                              (int)content_box.y1,
++                              (int)content_box.x2,
++                              (int)content_box.y2);
+ 
+   for (l = priv->children; l; l = g_list_next (l))
+     {
+@@ -1194,10 +1194,10 @@ st_box_layout_pick (ClutterActor       *actor,
+   content_box.y2 += y;
+ 
+   if (priv->hadjustment || priv->vadjustment)
+-    cogl_clip_push ((int)content_box.x1,
+-                    (int)content_box.y1,
+-                    (int)content_box.x2 - (int)content_box.x1,
+-                    (int)content_box.y2 - (int)content_box.y1);
++    cogl_clip_push_rectangle ((int)content_box.x1,
++                              (int)content_box.y1,
++                              (int)content_box.x2,
++                              (int)content_box.y2);
+ 
+   for (l = priv->children; l; l = g_list_next (l))
+     {
+-- 
+1.6.6.1
+
