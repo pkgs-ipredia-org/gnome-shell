@@ -1,31 +1,17 @@
-%define         alphatag    20100128git
-
 Name:           gnome-shell
-Version:        2.28.1
-Release:        0.2.%{alphatag}
+Version:        2.29.1
+Release:        1
 Summary:        Window management and application launching for GNOME
 
 Group:          User Interface/Desktops
 License:        GPLv2+
 URL:            http://live.gnome.org/GnomeShell
-#Source0:        http://ftp.gnome.org/pub/GNOME/sources/gnome-shell/2.27/%{name}-%{version}.tar.bz2
-# git clone git://git.gnome.org/gnome-shell
-# rm -fr gnome-shell/.git/
-# tar -cvzf gnome-shell.tar.gz gnome-shell
-Source0:        %{name}.tar.gz
-
+Source0:        http://ftp.gnome.org/pub/GNOME/sources/gnome-shell/2.27/%{name}-%{version}.tar.bz2
 BuildRoot:      %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
-%define clutter_version 1.0.0
-#%define gobject_introspection_version 0.6.5
-%define gobject_introspection_version 0.6.8
-%define mutter_version 2.28.0
-
-## Needed by git tree
-BuildRequires:  autoconf >= 2.53
-BuildRequires:  automake >= 1.10
-BuildRequires:  gnome-common >= 2.2.0
-BuildRequires:  libtool >= 1.4.3
+%define clutter_version 1.2.0
+%define gobject_introspection_version 0.6.9
+%define mutter_version 2.29.0
 
 BuildRequires:  clutter-devel >= %{clutter_version}
 BuildRequires:  dbus-glib-devel
@@ -65,9 +51,6 @@ Requires:       mutter >= %{mutter_version}
 #Requires:       xorg-x11-server-Xephyr
 #Requires:       xorg-x11-xauth
 
-# https://bugzilla.gnome.org/show_bug.cgi?id=610679
-Patch0: 0001-Use-non-deprecated-function-instead-of-cogl_clip_pus.patch
-
 %description
 GNOME Shell provides core user interface functions for the GNOME 3 desktop,
 like switching to windows and launching applications. GNOME Shell takes
@@ -76,14 +59,7 @@ innovative user interface concepts to provide a visually attractive and
 easy to use experience.
 
 %prep
-## The git repository snapshot has a different directory name:
-#%setup -q
-%setup -q -n gnome-shell
-
-%patch0 -p1 -b .deprecation
-
-## Needed to build the git tree
-NOCONFIGURE=1 /bin/sh autogen.sh
+%setup -q
 
 %build
 %configure
@@ -144,6 +120,9 @@ gconftool-2 --makefile-install-rule \
   > /dev/null || :
 
 %changelog
+* Wed Mar 24 2010 Adam Miller <maxamillion@fedoraproject.org> - 2.29.1
+- Update to latest version 2.29.1
+
 * Sun Feb 21 2010 Bastien Nocera <bnocera@redhat.com> 2.28.1-0.2.20100128git
 - Require json-glib
 - Rebuild for new clutter with json split out
