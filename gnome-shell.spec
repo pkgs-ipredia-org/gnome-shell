@@ -1,6 +1,6 @@
 Name:           gnome-shell
 Version:        2.29.1
-Release:        1
+Release:        2
 Summary:        Window management and application launching for GNOME
 
 Group:          User Interface/Desktops
@@ -9,15 +9,16 @@ URL:            http://live.gnome.org/GnomeShell
 Source0:        http://ftp.gnome.org/pub/GNOME/sources/gnome-shell/2.27/%{name}-%{version}.tar.bz2
 BuildRoot:      %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
-%define clutter_version 1.2.0
+%define clutter_version 1.2.2
 %define gobject_introspection_version 0.6.9
-%define mutter_version 2.29.0
+%define mutter_version 2.29.1
+%define gjs_version 0.6
 
 BuildRequires:  clutter-devel >= %{clutter_version}
 BuildRequires:  dbus-glib-devel
 BuildRequires:  desktop-file-utils
 BuildRequires:  gir-repository-devel
-BuildRequires:  gjs-devel
+BuildRequires:  gjs-devel >= %{gjs_version}
 BuildRequires:  glib2-devel
 BuildRequires:  gnome-desktop-devel
 BuildRequires:  gnome-menus-devel
@@ -120,7 +121,11 @@ gconftool-2 --makefile-install-rule \
   > /dev/null || :
 
 %changelog
-* Wed Mar 24 2010 Adam Miller <maxamillion@fedoraproject.org> - 2.29.1
+* Thu Mar 25 2010 Adam Miller <maxamillion@fedoraproject.org> - 2.29.1-2
+- Bumped for new version of mutter and clutter
+- Added version requirement to gjs-devel because of dependency of build
+
+* Wed Mar 24 2010 Adam Miller <maxamillion@fedoraproject.org> - 2.29.1-1
 - Update to latest version 2.29.1
 
 * Sun Feb 21 2010 Bastien Nocera <bnocera@redhat.com> 2.28.1-0.2.20100128git
