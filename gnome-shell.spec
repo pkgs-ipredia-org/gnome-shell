@@ -69,9 +69,7 @@ easy to use experience.
 sed -i 's|^hardcode_libdir_flag_spec=.*|hardcode_libdir_flag_spec=""|g' libtool
 sed -i 's|^runpath_var=LD_RUN_PATH|runpath_var=DIE_RPATH_DIE|g' libtool
 
-# http://bugzilla.gnome.org/show_bug.cgi?id=591474
-# make %{?_smp_mflags}
-make
+make V=1 %{?_smp_mflags}
 
 %install
 rm -rf %{buildroot}
@@ -121,6 +119,9 @@ gconftool-2 --makefile-install-rule \
   > /dev/null || :
 
 %changelog
+* Fri Mar 26 2010 Colin Walters <walters@verbum.org> - 2.29.1-3
+- Specify V=1 for build, readd smp_mflags since parallel is fixed upstream
+
 * Thu Mar 25 2010 Adam Miller <maxamillion@fedoraproject.org> - 2.29.1-2
 - Bumped for new version of mutter and clutter
 - Added version requirement to gjs-devel because of dependency of build
