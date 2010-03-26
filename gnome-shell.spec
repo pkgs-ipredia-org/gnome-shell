@@ -9,6 +9,8 @@ URL:            http://live.gnome.org/GnomeShell
 Source0:        http://ftp.gnome.org/pub/GNOME/sources/gnome-shell/2.27/%{name}-%{version}.tar.bz2
 BuildRoot:      %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
+Patch0: 0001-build-Link-against-lm.patch
+
 %define clutter_version 1.2.2
 %define gobject_introspection_version 0.6.9
 %define mutter_version 2.29.1
@@ -52,6 +54,12 @@ Requires:       mutter >= %{mutter_version}
 #Requires:       xorg-x11-server-Xephyr
 #Requires:       xorg-x11-xauth
 
+BuildRequires: gnome-common
+BuildRequires: autoconf
+BuildRequires: automake
+BuildRequires: libtool
+BuildRequires: intltool
+
 %description
 GNOME Shell provides core user interface functions for the GNOME 3 desktop,
 like switching to windows and launching applications. GNOME Shell takes
@@ -61,8 +69,10 @@ easy to use experience.
 
 %prep
 %setup -q
+%patch0 -p1
 
 %build
+./autogen.sh
 %configure
 
 # Remove rpath as per https://fedoraproject.org/wiki/Packaging/Guidelines#Beware_of_Rpath
@@ -92,6 +102,7 @@ rm -rf %{buildroot}
 %{_bindir}/gnome-shell
 %{_datadir}/applications/gnome-shell.desktop
 %{_datadir}/gnome-shell/
+%{_mandir}/*
 %{_libdir}/gnome-shell/
 %{_libdir}/mutter/plugins/libgnome-shell.so
 %{_sysconfdir}/gconf/schemas/gnome-shell.schemas
@@ -120,6 +131,7 @@ gconftool-2 --makefile-install-rule \
 
 %changelog
 * Fri Mar 26 2010 Colin Walters <walters@verbum.org> - 2.29.1-3
+- Add manpage to files
 - Specify V=1 for build, readd smp_mflags since parallel is fixed upstream
 
 * Thu Mar 25 2010 Adam Miller <maxamillion@fedoraproject.org> - 2.29.1-2
