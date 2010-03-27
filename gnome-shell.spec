@@ -1,6 +1,6 @@
 Name:           gnome-shell
 Version:        2.29.1
-Release:        3
+Release:        4
 Summary:        Window management and application launching for GNOME
 
 Group:          User Interface/Desktops
@@ -49,6 +49,7 @@ Requires:       librsvg2
 # needed as it is now split from Clutter
 Requires:       json-glib
 Requires:       mutter >= %{mutter_version}
+Requires:       gjs >= %{gjs_version}
 # These are needed to run gnome-shell nested Xephyr mode, but that's a
 # developer-only thing and unlikely to be interesting for a normal user
 #Requires:       xorg-x11-server-Xephyr
@@ -130,6 +131,9 @@ gconftool-2 --makefile-install-rule \
   > /dev/null || :
 
 %changelog
+* Sat Mar 27 2010 Colin Walters <walters@verbum.org> - 2.29.1-4
+- Add an explicit Requires: on gjs.  Should resolve bug #577460
+
 * Fri Mar 26 2010 Colin Walters <walters@verbum.org> - 2.29.1-3
 - Add manpage to files
 - Specify V=1 for build, readd smp_mflags since parallel is fixed upstream
