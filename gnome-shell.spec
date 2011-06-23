@@ -1,6 +1,6 @@
 Name:           gnome-shell
 Version:        3.0.2
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Window management and application launching for GNOME
 
 Group:          User Interface/Desktops
@@ -139,6 +139,9 @@ gconftool-2 --makefile-install-rule \
 glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas ||:
 
 %changelog
+* Thu Jun 23 2011 Colin Walters <walters@verbum.org> - 3.0.2-2
+- Rebuild against latest gjs; should drop mozjs.so dependency
+
 * Wed May 25 2011 Owen Taylor <otaylor@redhat.com> - 3.0.2-1
 - Update to 3.0.2
 
