@@ -1,6 +1,6 @@
 Name:           gnome-shell
 Version:        3.0.2
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Window management and application launching for GNOME
 
 Group:          User Interface/Desktops
@@ -14,14 +14,13 @@ Patch0: gnome-shell-avoid-redhat-menus.patch
 %define clutter_version 1.4.0
 %define gobject_introspection_version 0.10.1
 %define mutter_version 3.0.0
-%define gjs_version 0.7.5
 %define eds_version 2.91.6
 
 BuildRequires:  clutter-devel >= %{clutter_version}
 BuildRequires:  dbus-glib-devel
 BuildRequires:  desktop-file-utils
 BuildRequires:  evolution-data-server-devel >= %{eds_version}
-BuildRequires:  gjs-devel >= %{gjs_version}
+BuildRequires:  gjs-devel >= 0.7.14-6
 BuildRequires:  glib2-devel
 BuildRequires:  gnome-menus-devel
 BuildRequires:  gnome-desktop3-devel
@@ -139,6 +138,9 @@ gconftool-2 --makefile-install-rule \
 glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas ||:
 
 %changelog
+* Thu Jun 23 2011 Colin Walters <walters@verbum.org> - 3.0.2-3
+- Add versioned dep on gjs
+
 * Thu Jun 23 2011 Colin Walters <walters@verbum.org> - 3.0.2-2
 - Rebuild against latest gjs; should drop mozjs.so dependency
 
