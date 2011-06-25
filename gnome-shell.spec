@@ -1,6 +1,6 @@
 Name:           gnome-shell
 Version:        3.0.2
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        Window management and application launching for GNOME
 
 Group:          User Interface/Desktops
@@ -16,6 +16,7 @@ Patch0: gnome-shell-avoid-redhat-menus.patch
 %define mutter_version 3.0.0
 %define eds_version 2.91.6
 
+BuildRequires:  chrpath
 BuildRequires:  clutter-devel >= %{clutter_version}
 BuildRequires:  dbus-glib-devel
 BuildRequires:  desktop-file-utils
@@ -96,6 +97,11 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/gnome-shell.desktop
 
 %find_lang %{name}
 
+# The libdir rpath breaks nvidia binary only folks, so we remove it.  
+# See bug 716572
+chrpath -r %{_libdir}/gnome-shell:%{_libdir}/gnome-bluetooth $RPM_BUILD_ROOT%{_bindir}/gnome-shell
+chrpath -r %{_libdir}/gnome-bluetooth $RPM_BUILD_ROOT%{_libdir}/gnome-shell/libgnome-shell.so
+
 %files -f %{name}.lang
 %defattr(-,root,root,-)
 %doc COPYING README
@@ -138,6 +144,9 @@ gconftool-2 --makefile-install-rule \
 glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas ||:
 
 %changelog
+* Sat Jun 25 2011 Kevin Fenzi <kevin@scrye.com> - 3.0.2-4
+- Use chrpath to nuke rpaths. Fixes bug #716572
+
 * Thu Jun 23 2011 Colin Walters <walters@verbum.org> - 3.0.2-3
 - Add versioned dep on gjs
 
