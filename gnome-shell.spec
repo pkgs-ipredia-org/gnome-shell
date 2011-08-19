@@ -1,6 +1,6 @@
 Name:           gnome-shell
 Version:        3.0.2
-Release:        4%{?dist}
+Release:        5%{?dist}
 Summary:        Window management and application launching for GNOME
 
 Group:          User Interface/Desktops
@@ -97,10 +97,13 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/gnome-shell.desktop
 
 %find_lang %{name}
 
+%ifnarch s390 s390x
 # The libdir rpath breaks nvidia binary only folks, so we remove it.  
 # See bug 716572
+# skip on s390(x), workarounds a chrpath issue
 chrpath -r %{_libdir}/gnome-shell:%{_libdir}/gnome-bluetooth $RPM_BUILD_ROOT%{_bindir}/gnome-shell
 chrpath -r %{_libdir}/gnome-bluetooth $RPM_BUILD_ROOT%{_libdir}/gnome-shell/libgnome-shell.so
+%endif
 
 %files -f %{name}.lang
 %defattr(-,root,root,-)
@@ -144,6 +147,9 @@ gconftool-2 --makefile-install-rule \
 glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas ||:
 
 %changelog
+* Fri Aug 19 2011 Dan Horák <dan[at]danny.cz> - 3.0.2-5
+- workaround a chrpath issue on s390(x)
+
 * Sat Jun 25 2011 Kevin Fenzi <kevin@scrye.com> - 3.0.2-4
 - Use chrpath to nuke rpaths. Fixes bug #716572
 
