@@ -1,7 +1,7 @@
 
 Name:           gnome-shell
-Version:        3.1.90.1
-Release:        2%{?dist}
+Version:        3.1.91
+Release:        1%{?dist}
 Summary:        Window management and application launching for GNOME
 
 Group:          User Interface/Desktops
@@ -154,6 +154,9 @@ gconftool-2 --makefile-install-rule \
 glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas ||:
 
 %changelog
+* Wed Sep  7 2011 Matthias Clasen <mclasen@redhat.com> - 3.1.91-1
+- Update to 3.1.91
+
 * Thu Sep  1 2011 Matthias Clasen <mclasen@redhat.com> - 3.1.90.1-2
 - Require caribou
 
