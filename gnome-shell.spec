@@ -1,6 +1,6 @@
 Name:           gnome-shell
 Version:        3.0.2
-Release:        5%{?dist}
+Release:        6%{?dist}
 Summary:        Window management and application launching for GNOME
 
 Group:          User Interface/Desktops
@@ -10,6 +10,9 @@ URL:            http://live.gnome.org/GnomeShell
 Source0:        http://ftp.gnome.org/pub/GNOME/sources/gnome-shell/3.0/%{name}-%{version}.tar.bz2
 
 Patch0: gnome-shell-avoid-redhat-menus.patch
+
+# http://bugzilla.gnome.org/651378
+Patch1: stop-long-hangs.patch
 
 %define clutter_version 1.4.0
 %define gobject_introspection_version 0.10.1
@@ -80,6 +83,7 @@ easy to use experience.
 %prep
 %setup -q
 %patch0 -p1 -b .avoid-redhat-menus
+%patch1 -p1 -b .stop-long-hangs
 
 %build
 (if ! test -x configure; then NOCONFIGURE=1 ./autogen.sh; fi;
@@ -147,6 +151,11 @@ gconftool-2 --makefile-install-rule \
 glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas ||:
 
 %changelog
+* Wed Oct 12 2011 Ray Strode <rstrode@redhat.com> 3.0.2-6
+- Add upstream patch to prevent several minute
+  stalls when there are networks without ssids
+  Resolves: #705609
+
 * Fri Aug 19 2011 Dan Horák <dan[at]danny.cz> - 3.0.2-5
 - workaround a chrpath issue on s390(x)
 
