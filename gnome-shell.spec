@@ -1,6 +1,6 @@
 Name:           gnome-shell
-Version:        3.2.1
-Release:        2%{?dist}
+Version:        3.2.2
+Release:        1%{?dist}
 Summary:        Window management and application launching for GNOME
 
 Group:          User Interface/Desktops
@@ -155,6 +155,9 @@ gconftool-2 --makefile-install-rule \
 glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas ||:
 
 %changelog
+* Wed Jan 18 2012 Owen Taylor <otaylor@redhat.com> - 3.2.2-1
+- Update to 3.2.2
+
 * Wed Oct 26 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.2.1-2
 - Rebuilt for glibc bug#747377
 
