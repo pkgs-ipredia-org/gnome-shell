@@ -1,5 +1,5 @@
 Name:           gnome-shell
-Version:        3.2.2
+Version:        3.2.2.1
 Release:        1%{?dist}
 Summary:        Window management and application launching for GNOME
 
@@ -155,6 +155,9 @@ gconftool-2 --makefile-install-rule \
 glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas ||:
 
 %changelog
+* Fri Jan 20 2012 Owen Taylor <otaylor@redhat.com> - 3.2.2.1-1
+- Update to 3.2.2.1 - fixes regressions with tray icon handling
+
 * Wed Jan 18 2012 Owen Taylor <otaylor@redhat.com> - 3.2.2-1
 - Update to 3.2.2
 
