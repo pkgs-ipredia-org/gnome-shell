@@ -1,6 +1,6 @@
 Name:           gnome-shell
 Version:        3.2.2.1
-Release:        1%{?dist}
+Release:        1%{?dist}.justforairlied
 Summary:        Window management and application launching for GNOME
 
 Group:          User Interface/Desktops
@@ -12,6 +12,7 @@ Source0:        http://download.gnome.org/sources/gnome-shell/3.2/%{name}-%{vers
 Patch0: gnome-shell-avoid-redhat-menus.patch
 # Replace Epiphany with Firefox in the default favourite apps list
 Patch1: gnome-shell-favourite-apps-firefox.patch
+Patch2: just-for-airlied.patch
 
 %define clutter_version 1.4.0
 %define gobject_introspection_version 0.10.1
@@ -86,6 +87,7 @@ easy to use experience.
 %setup -q
 %patch0 -p1 -b .avoid-redhat-menus
 %patch1 -p1 -b .firefox
+%patch2 -p1 -b .just-for-airlied
 
 %build
 (if ! test -x configure; then NOCONFIGURE=1 ./autogen.sh; fi;
@@ -155,6 +157,9 @@ gconftool-2 --makefile-install-rule \
 glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas ||:
 
 %changelog
+* Mon Feb 13 2012 Ray Strode <rstrode@redhat.com> 3.2.2.1-1.justforairlied
+- Add patch to possibly fix fast user switching lock ups
+
 * Fri Jan 20 2012 Owen Taylor <otaylor@redhat.com> - 3.2.2.1-1
 - Update to 3.2.2.1 - fixes regressions with tray icon handling
 
