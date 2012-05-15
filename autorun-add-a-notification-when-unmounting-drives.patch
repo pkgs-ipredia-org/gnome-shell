@@ -1,0 +1,180 @@
+From b5b3ccd2b0007877401ee9e6f3d29dc43c8731cc Mon Sep 17 00:00:00 2001
+From: Cosimo Cecchi <cosimoc@gnome.org>
+Date: Mon, 14 May 2012 18:33:06 -0400
+Subject: [PATCH] autorun: add a notification when unmounting drives
+
+Initial patch by Adel Gadllah <adel.gadllah@gmail.com>
+
+https://bugzilla.redhat.com/show_bug.cgi?id=819492
+
+https://bugzilla.gnome.org/show_bug.cgi?id=676125
+---
+ js/ui/autorunManager.js |  100 +++++++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 92 insertions(+), 8 deletions(-)
+
+diff --git a/js/ui/autorunManager.js b/js/ui/autorunManager.js
+index 27d89e8..6f799d7 100644
+--- a/js/ui/autorunManager.js
++++ b/js/ui/autorunManager.js
+@@ -193,6 +193,7 @@ const AutorunManager = new Lang.Class({
+ 
+     ejectMount: function(mount) {
+         let mountOp = new ShellMountOperation.ShellMountOperation(mount);
++        let unmountNotifier;
+ 
+         // first, see if we have a drive
+         let drive = mount.get_drive();
+@@ -201,28 +202,35 @@ const AutorunManager = new Lang.Class({
+         if (drive &&
+             drive.get_start_stop_type() == Gio.DriveStartStopType.SHUTDOWN &&
+             drive.can_stop()) {
++            unmountNotifier = new UnmountNotifier(mountOp.mountOp, drive);
+             drive.stop(0, mountOp.mountOp, null,
+-                       Lang.bind(this, this._onStop));
++                       Lang.bind(this, this._onStop, unmountNotifier));
+         } else {
+             if (mount.can_eject()) {
++                unmountNotifier = new UnmountNotifier(mountOp.mountOp, mount);
+                 mount.eject_with_operation(0, mountOp.mountOp, null,
+-                                           Lang.bind(this, this._onEject));
++                                           Lang.bind(this, this._onEject, unmountNotifier));
+             } else if (volume && volume.can_eject()) {
++                unmountNotifier = new UnmountNotifier(mountOp.mountOp, volume);
+                 volume.eject_with_operation(0, mountOp.mountOp, null,
+-                                            Lang.bind(this, this._onEject));
++                                            Lang.bind(this, this._onEject, unmountNotifier));
+             } else if (drive && drive.can_eject()) {
++                unmountNotifier = new UnmountNotifier(mountOp.mountOp, drive);
+                 drive.eject_with_operation(0, mountOp.mountOp, null,
+-                                           Lang.bind(this, this._onEject));
++                                           Lang.bind(this, this._onEject, unmountNotifier));
+             } else if (mount.can_unmount()) {
++                unmountNotifier = new UnmountNotifier(mountOp.mountOp, mount);
+                 mount.unmount_with_operation(0, mountOp.mountOp, null,
+-                                             Lang.bind(this, this._onUnmount));
++                                             Lang.bind(this, this._onUnmount, unmountNotifier));
+             }
+         }
+     },
+ 
+-    _onUnmount: function(mount, res) {
++    _onUnmount: function(mount, res, notifier) {
++        let success = false;
+         try {
+             mount.unmount_with_operation_finish(res);
++            success = true;
+         } catch (e) {
+             // FIXME: we need to ignore G_IO_ERROR_FAILED_HANDLED errors here
+             // but we can't access the error code from JS.
+@@ -230,11 +238,15 @@ const AutorunManager = new Lang.Class({
+             log('Unable to eject the mount ' + mount.get_name() 
+                 + ': ' + e.toString());
+         }
++
++        notifier.done(success);
+     },
+ 
+-    _onEject: function(source, res) {
++    _onEject: function(source, res, notifier) {
++        let success = false;
+         try {
+             source.eject_with_operation_finish(res);
++            success = true;
+         } catch (e) {
+             // FIXME: we need to ignore G_IO_ERROR_FAILED_HANDLED errors here
+             // but we can't access the error code from JS.
+@@ -242,11 +254,15 @@ const AutorunManager = new Lang.Class({
+             log('Unable to eject the drive ' + source.get_name() 
+                 + ': ' + e.toString());
+         }
++
++        notifier.done(success);
+     },
+ 
+-    _onStop: function(drive, res) {
++    _onStop: function(drive, res, notifier) {
++        let success = false;
+         try {
+             drive.stop_finish(res);
++            success = true;
+         } catch (e) {
+             // FIXME: we need to ignore G_IO_ERROR_FAILED_HANDLED errors here
+             // but we can't access the error code from JS.
+@@ -254,7 +270,75 @@ const AutorunManager = new Lang.Class({
+             log('Unable to stop the drive ' + drive.get_name() 
+                 + ': ' + e.toString());
+         }
++
++        notifier.done(success);
++    }
++});
++
++const UnmountNotifier = new Lang.Class({
++    Name: 'UnmountNotifier',
++    Extends: MessageTray.Source,
++
++    _init: function(mountOperation, device) {
++        this.parent('');
++        this._deviceName = device.get_name();
++
++        mountOperation.connect('show-processes-2', Lang.bind(this,
++            function() {
++                this.done(false);
++            }));
++        mountOperation.connect('reply', Lang.bind(this,
++            function(mountOp, res) {
++                // "Unmount Anyway" choice
++                if (mountOp.choice == 0)
++                    this._show();
++            }));
++        mountOperation.connect('aborted', Lang.bind(this,
++            function() {
++                this.done(false);
++            }));
++
++        this._notification = null;
++        Main.messageTray.add(this);
++
++        this._show();
++    },
++
++    _show: function() {
++        let header = _("Writing data to %s").format(this._deviceName);
++        let text = _("Don't unplug until finished");
++
++        if (!this._notification) {
++            this._notification = new MessageTray.Notification(this, header, text);
++        } else {
++            this._notification.update(header, text);
++        }
++
++        this._notification.setTransient(true);
++        this._notification.setUrgency(MessageTray.Urgency.CRITICAL);
++        this.notify(this._notification);
+     },
++
++    done: function(success) {
++        if (this._notification) {
++            this._notification.destroy();
++            this._notification = null;
++        }
++
++        if (success) {
++            let header = _("You can now unplug %s").format(this._deviceName);
++            let notification = new MessageTray.Notification(this, header, null);
++            notification.setTransient(true);
++
++            this.notify(notification);
++        }
++    },
++
++    createNotificationIcon: function() {
++        return new St.Icon ({ icon_name: 'media-removable',
++                              icon_type: St.IconType.FULLCOLOR,
++                              icon_size: this.ICON_SIZE });
++    }
+ });
+ 
+ const AutorunResidentSource = new Lang.Class({
+-- 
+1.7.10.2

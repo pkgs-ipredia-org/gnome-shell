@@ -1,6 +1,6 @@
 Name:           gnome-shell
 Version:        3.4.1
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        Window management and application launching for GNOME
 
 Group:          User Interface/Desktops
@@ -14,6 +14,8 @@ Patch0: gnome-shell-avoid-redhat-menus.patch
 Patch1: gnome-shell-favourite-apps-firefox.patch
 # https://bugzilla.gnome.org/show_bug.cgi?id=674424
 Patch2: Mirror-Evolution-calendar-settings-into-our-own-sche.patch
+# https://bugzilla.gnome.org/show_bug.cgi?id=676125
+Patch3: autorun-add-a-notification-when-unmounting-drives.patch
 
 %define clutter_version 1.9.16
 %define gobject_introspection_version 0.10.1
@@ -90,6 +92,7 @@ easy to use experience.
 %patch0 -p1 -b .avoid-redhat-menus
 %patch1 -p1 -b .firefox
 %patch2 -p1 -b .mirror-schemas
+%patch3 -p1 -b .autorun
 
 rm configure
 
@@ -152,6 +155,9 @@ glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas &> /dev/null 
 %exclude %{_datadir}/gtk-doc
 
 %changelog
+* Tue May 15 2012 Owen Taylor <otaylor@redhat.com> - 3.4.1-4
+- Add a patch to display a notification until it's safe to remove a drive (#819492)
+
 * Fri Apr 20 2012 Owen Taylor <otaylor@redhat.com> - 3.4.1-3
 - Add a patch from upstream to avoid a crash when Evolution is not installed (#814401)
 
