@@ -1,6 +1,6 @@
 Name:           gnome-shell
 Version:        3.4.1
-Release:        4%{?dist}
+Release:        5%{?dist}
 Summary:        Window management and application launching for GNOME
 
 Group:          User Interface/Desktops
@@ -155,6 +155,9 @@ glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas &> /dev/null 
 %exclude %{_datadir}/gtk-doc
 
 %changelog
+* Wed May 16 2012 Owen Taylor <otaylor@redhat.com> - 3.4.1-5
+- New version of unmount notification
+
 * Tue May 15 2012 Owen Taylor <otaylor@redhat.com> - 3.4.1-4
 - Add a patch to display a notification until it's safe to remove a drive (#819492)
 
