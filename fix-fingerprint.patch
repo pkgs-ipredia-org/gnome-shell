@@ -1,0 +1,81 @@
+From e333263fd646cee7b235e181db7dd96a6bf0735e Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Fri, 27 Apr 2012 17:51:18 -0400
+Subject: [PATCH] gdm: don't fail if fprintd unavailable
+
+fingerprint support is optional so we shouldn't try to start
+fprintd upfront and croak if it fails.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=675006
+---
+ js/gdm/fingerprint.js | 17 ++++++++++++-----
+ 1 file changed, 12 insertions(+), 5 deletions(-)
+
+diff --git a/js/gdm/fingerprint.js b/js/gdm/fingerprint.js
+index 9c090b0..13362c2 100644
+--- a/js/gdm/fingerprint.js
++++ b/js/gdm/fingerprint.js
+@@ -11,10 +11,17 @@ const FprintManagerIface = <interface name='net.reactivated.Fprint.Manager'>
+ </method>
+ </interface>;
+
+-const FprintManagerProxy = Gio.DBusProxy.makeProxyWrapper(FprintManagerIface);
++const FprintManagerInfo = Gio.DBusInterfaceInfo.new_for_xml(FprintManagerIface);
+
+ function FprintManager() {
+-    return new FprintManagerProxy(Gio.DBus.system,
+-                           'net.reactivated.Fprint',
+-                           '/net/reactivated/Fprint/Manager');
+-};
++    var self = new Gio.DBusProxy({ g_connection: Gio.DBus.system,
++                                   g_interface_name: FprintManagerInfo.name,
++                                   g_interface_info: FprintManagerInfo,
++                                   g_name: 'net.reactivated.Fprint',
++                                   g_object_path: '/net/reactivated/Fprint/Manager',
++                                   g_flags: (Gio.DBusProxyFlags.DO_NOT_AUTO_START |
++                                             Gio.DBusProxyFlags.DO_NOT_LOAD_PROPERTIES) });
++
++    self.init(null);
++    return self;
++}
+--
+1.7.12
+
+From 638507caff2660891f768f583532f35eb55de0bf Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Thu, 13 Sep 2012 15:56:19 -0400
+Subject: [PATCH] fingerprint: autostart fprintd when necessary
+
+commit e333263fd646cee7b235e181db7dd96a6bf0735e changed fingerprint.js
+to not throw an exception when fprintd is uninstalled, by adding the
+flags DO_NOT_LOAD_PROPERTIES and DO_NOT_AUTO_START
+
+DO_NOT_LOAD_PROPERTIES is correct.  Loading the properties is what makes
+it fail at initialization time when not installed.  DO_NOT_AUTO_START is
+not correct though. It means fprintd will never get activated implicitly
+when we need it.
+
+This commit removes DO_NOT_AUTO_START thus making fprintd start when we
+need it, but not fail at initialization time when not around.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=683131
+---
+ js/gdm/fingerprint.js | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/js/gdm/fingerprint.js b/js/gdm/fingerprint.js
+index 13362c2..41b6b35 100644
+--- a/js/gdm/fingerprint.js
++++ b/js/gdm/fingerprint.js
+@@ -19,8 +19,7 @@ function FprintManager() {
+                                    g_interface_info: FprintManagerInfo,
+                                    g_name: 'net.reactivated.Fprint',
+                                    g_object_path: '/net/reactivated/Fprint/Manager',
+-                                   g_flags: (Gio.DBusProxyFlags.DO_NOT_AUTO_START |
+-                                             Gio.DBusProxyFlags.DO_NOT_LOAD_PROPERTIES) });
++                                   g_flags: (Gio.DBusProxyFlags.DO_NOT_LOAD_PROPERTIES) });
+
+     self.init(null);
+     return self;
+--
+1.7.12

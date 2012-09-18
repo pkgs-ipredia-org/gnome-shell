@@ -1,6 +1,6 @@
 Name:           gnome-shell
 Version:        3.4.1
-Release:        5%{?dist}
+Release:        6%{?dist}
 Summary:        Window management and application launching for GNOME
 
 Group:          User Interface/Desktops
@@ -16,6 +16,8 @@ Patch1: gnome-shell-favourite-apps-firefox.patch
 Patch2: Mirror-Evolution-calendar-settings-into-our-own-sche.patch
 # https://bugzilla.gnome.org/show_bug.cgi?id=676125
 Patch3: autorun-add-a-notification-when-unmounting-drives.patch
+# https://bugzilla.redhat.com/show_bug.cgi?id=810040
+Patch4: fix-fingerprint.patch
 
 %define clutter_version 1.9.16
 %define gobject_introspection_version 0.10.1
@@ -93,6 +95,7 @@ easy to use experience.
 %patch1 -p1 -b .firefox
 %patch2 -p1 -b .mirror-schemas
 %patch3 -p1 -b .autorun
+%patch4 -p1 -b .fix-fingerprint
 
 rm configure
 
@@ -155,6 +158,10 @@ glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas &> /dev/null 
 %exclude %{_datadir}/gtk-doc
 
 %changelog
+* Tue Sep 18 2012 Ray Strode <rstrode@redhat.com> 3.4.1-6
+- Don't require fprintd to be installed to function
+  Resolves: #810040
+
 * Wed May 16 2012 Owen Taylor <otaylor@redhat.com> - 3.4.1-5
 - New version of unmount notification
 
