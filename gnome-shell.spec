@@ -1,10 +1,11 @@
 Name:           gnome-shell
 Version:        3.6.2
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        Window management and application launching for GNOME
 
 Group:          User Interface/Desktops
 License:        GPLv2+
+Provides:       desktop-notification-daemon
 URL:            http://live.gnome.org/GnomeShell
 #VCS:           git:git://git.gnome.org/gnome-shell
 Source0:        http://download.gnome.org/sources/gnome-shell/3.6/%{name}-%{version}.tar.xz
@@ -165,6 +166,9 @@ glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas &> /dev/null 
 %exclude %{_datadir}/gtk-doc
 
 %changelog
+* Fri Nov 30 2012 Florian Müllner <fmuellner@redhat.com> - 3.6.2-4
+- Provide desktop-notification-daemon
+
 * Fri Nov 30 2012 Brian Pepple <bpepple@fedoraproject.org> - 3.6.2-3
 - Rebuild against tp-logger.
 
