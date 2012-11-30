@@ -1,6 +1,6 @@
 Name:           gnome-shell
 Version:        3.6.2
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Window management and application launching for GNOME
 
 Group:          User Interface/Desktops
@@ -165,6 +165,9 @@ glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas &> /dev/null 
 %exclude %{_datadir}/gtk-doc
 
 %changelog
+* Fri Nov 30 2012 Brian Pepple <bpepple@fedoraproject.org> - 3.6.2-3
+- Rebuild against tp-logger.
+
 * Thu Nov 22 2012 Florian Müllner <fmuellner@redhat.com> - 3.6.2-3
 - Fix upstream URL
 
