@@ -1,6 +1,6 @@
 Name:           gnome-shell
 Version:        3.6.2
-Release:        5%{?dist}
+Release:        6%{?dist}
 Summary:        Window management and application launching for GNOME
 
 Group:          User Interface/Desktops
@@ -122,7 +122,7 @@ rm %{buildroot}/usr/bin/gnome-shell-perf-tool
 
 %find_lang %{name}
 
-%ifnarch s390 s390x
+%ifnarch s390 s390x ppc ppc64 ppc64p7
 # The libdir rpath breaks nvidia binary only folks, so we remove it.
 # See bug 716572
 # skip on s390(x), workarounds a chrpath issue
@@ -166,6 +166,9 @@ glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas &> /dev/null 
 %exclude %{_datadir}/gtk-doc
 
 %changelog
+* Mon Dec 17 2012 Adam Jackson <ajax@redhat.com> 3.6.2-6
+- Also don't mangle rpath on power
+
 * Mon Dec 10 2012 Adam Jackson <ajax@redhat.com> 3.6.2-5
 - Disable bluetooth on power
 
