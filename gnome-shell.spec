@@ -1,6 +1,6 @@
 Name:           gnome-shell
-Version:        3.6.2
-Release:        6%{?dist}
+Version:        3.6.3
+Release:        1%{?dist}
 Summary:        Window management and application launching for GNOME
 
 Group:          User Interface/Desktops
@@ -166,6 +166,9 @@ glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas &> /dev/null 
 %exclude %{_datadir}/gtk-doc
 
 %changelog
+* Wed Feb 13 2013 Florian Müllner <fmuellner@redhat.com> - 3.6.3-1
+- Update to 3.6.3
+
 * Mon Dec 17 2012 Adam Jackson <ajax@redhat.com> 3.6.2-6
 - Also don't mangle rpath on power
 
