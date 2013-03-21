@@ -1,0 +1,25 @@
+From d660e119518ca5d34ce9cfccd8193903d51fb872 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Wed, 20 Mar 2013 20:38:17 -0400
+Subject: [PATCH] sessionMode: fix initial-setup mode
+
+It creates windows so we need to set hasWindows == true
+---
+ js/ui/sessionMode.js | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/js/ui/sessionMode.js b/js/ui/sessionMode.js
+index e926ba2..6c1b6f1 100644
+--- a/js/ui/sessionMode.js
++++ b/js/ui/sessionMode.js
+@@ -81,6 +81,7 @@ const _modes = {
+     'initial-setup': {
+         isPrimary: true,
+         components: ['keyring'],
++        hasWindows: true,
+         panel: {
+             left: [],
+             center: ['dateMenu'],
+-- 
+1.8.1.4
+
