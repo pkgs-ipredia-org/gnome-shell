@@ -12,7 +12,6 @@ Source0:        http://download.gnome.org/sources/gnome-shell/3.7/%{name}-%{vers
 
 # Replace Epiphany with Firefox in the default favourite apps list
 Patch1: gnome-shell-favourite-apps-firefox.patch
-Patch2: fix-initial-setup.patch
 
 %define clutter_version 1.13.4
 %define gnome_bluetooth_version 3.5.5
@@ -111,7 +110,6 @@ easy to use experience.
 %prep
 %setup -q
 %patch1 -p1 -b .firefox
-%patch2 -p1 -b .fix-initial-setup
 
 %build
 (if ! test -x configure; then NOCONFIGURE=1 ./autogen.sh; fi;
@@ -178,6 +176,9 @@ glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas &> /dev/null 
 %exclude %{_datadir}/gtk-doc
 
 %changelog
+* Wed Mar 26 2013 Florian Müllner <fmuellner@redhat.com>
+- Drop upstreamed patch
+
 * Wed Mar 20 2013 Ray Strode <rstrode@redhat.com> 3.7.92-2
 - Fix initial setup
 
