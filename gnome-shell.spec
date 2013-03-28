@@ -125,9 +125,6 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/gnome-shell.desktop
 desktop-file-validate %{buildroot}%{_datadir}/applications/gnome-shell-extension-prefs.desktop
 desktop-file-validate %{buildroot}%{_datadir}/applications/evolution-calendar.desktop
 
-# fixme: do we want to include this ?
-rm %{buildroot}/usr/bin/gnome-shell-perf-tool
-
 %find_lang %{name}
 
 %ifnarch s390 s390x ppc ppc64 ppc64p7
