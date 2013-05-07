@@ -1,6 +1,6 @@
 Name:           gnome-shell
 Version:        3.8.1
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        Window management and application launching for GNOME
 
 Group:          User Interface/Desktops
@@ -15,6 +15,12 @@ Patch1: gnome-shell-favourite-apps-firefox.patch
 
 # Temporary downstreamed patches:
 Patch10: 0001-gdm-Fix-regression-where-domain-login-hint-not-shown.patch
+
+Patch11: 0001-modalDialog-Always-use-a-stack-for-the-background.patch
+Patch12: 0002-loginDialog-Optionally-show-logo-below-user-list.patch
+Patch13: 0003-loginDialog-Remove-logo-in-upper-left-corner.patch
+Patch14: 0001-modalDialog-Replace-Shell.Stack-with-layout-manager.patch
+Patch15: 0002-loginDialog-Adjust-logoBin-to-modalDialog-changes.patch
 
 %define clutter_version 1.13.4
 %define gnome_bluetooth_version 3.5.5
@@ -117,6 +123,11 @@ easy to use experience.
 %setup -q
 %patch1 -p1 -b .firefox
 %patch10 -p1 -b .loginhint
+%patch11 -p1 -b .login-screen-branding1
+%patch12 -p1 -b .login-screen-branding2
+%patch13 -p1 -b .login-screen-branding3
+%patch14 -p1 -b .login-screen-branding4
+%patch15 -p1 -b .login-screen-branding5
 
 %build
 (if ! test -x configure; then NOCONFIGURE=1 ./autogen.sh; fi;
@@ -181,6 +192,9 @@ glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas &> /dev/null 
 %exclude %{_datadir}/gtk-doc
 
 %changelog
+* Wed May 07 2013 Florian Müllner <fmuellner@redhat.com> - 3.8.1-4
+- Add login-screen branding changes from gnome-3-8 branch as downstream patches
+
 * Wed May 01 2013 Kalev Lember <kalevlember@gmail.com> - 3.8.1-2
 - Add missing telepathy-logger runtime dep
 - Depend on gnome-session-xsession so that it gets pulled in for

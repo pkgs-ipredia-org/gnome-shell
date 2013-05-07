@@ -1,0 +1,51 @@
+From a40bb67fc6c1a42ad24483c82f04a04a663780a4 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Florian=20M=C3=BCllner?= <fmuellner@gnome.org>
+Date: Sat, 23 Mar 2013 00:39:05 +0100
+Subject: [PATCH 1/3] modalDialog: Always use a stack for the background
+
+Currently a system modal dialog's actor hierarchy depends on whether
+events should be blocked while the dialog is shown or not. Change
+it to always contain a stack, to allow subclasses to add additional
+background elements.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=694912
+---
+ js/ui/modalDialog.js | 13 +++++--------
+ 1 file changed, 5 insertions(+), 8 deletions(-)
+
+diff --git a/js/ui/modalDialog.js b/js/ui/modalDialog.js
+index beac7fe..84c5c3b 100644
+--- a/js/ui/modalDialog.js
++++ b/js/ui/modalDialog.js
+@@ -65,7 +65,9 @@ const ModalDialog = new Lang.Class({
+         this._group.connect('key-press-event', Lang.bind(this, this._onKeyPressEvent));
+         this._group.connect('key-release-event', Lang.bind(this, this._onKeyReleaseEvent));
+ 
+-        this._backgroundBin = new St.Bin();
++        this.backgroundStack = new Shell.Stack();
++        this._backgroundBin = new St.Bin({ child: this.backgroundStack,
++                                           x_fill: true, y_fill: true });
+         this._monitorConstraint = new Layout.MonitorConstraint();
+         this._backgroundBin.add_constraint(this._monitorConstraint);
+         this._group.add_actor(this._backgroundBin);
+@@ -81,15 +83,10 @@ const ModalDialog = new Lang.Class({
+                                                    { inhibitEvents: true });
+             this._lightbox.highlight(this._backgroundBin);
+ 
+-            let stack = new Shell.Stack();
+-            this._backgroundBin.child = stack;
+-
+             this._eventBlocker = new Clutter.Actor({ reactive: true });
+-            stack.add_actor(this._eventBlocker);
+-            stack.add_actor(this.dialogLayout);
+-        } else {
+-            this._backgroundBin.child = this.dialogLayout;
++            this.backgroundStack.add_actor(this._eventBlocker);
+         }
++        this.backgroundStack.add_actor(this.dialogLayout);
+ 
+ 
+         this.contentLayout = new St.BoxLayout({ vertical: true });
+-- 
+1.8.2.1
+
