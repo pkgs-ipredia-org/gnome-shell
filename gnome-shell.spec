@@ -1,6 +1,6 @@
 Name:           gnome-shell
 Version:        3.8.1
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Window management and application launching for GNOME
 
 Group:          User Interface/Desktops
@@ -12,6 +12,9 @@ Source0:        http://download.gnome.org/sources/gnome-shell/3.8/%{name}-%{vers
 
 # Replace Epiphany with Firefox in the default favourite apps list
 Patch1: gnome-shell-favourite-apps-firefox.patch
+
+# Temporary downstreamed patches:
+Patch10: 0001-gdm-Fix-regression-where-domain-login-hint-not-shown.patch
 
 %define clutter_version 1.13.4
 %define gnome_bluetooth_version 3.5.5
@@ -113,6 +116,7 @@ easy to use experience.
 %prep
 %setup -q
 %patch1 -p1 -b .firefox
+%patch10 -p1 -b .loginhint
 
 %build
 (if ! test -x configure; then NOCONFIGURE=1 ./autogen.sh; fi;
