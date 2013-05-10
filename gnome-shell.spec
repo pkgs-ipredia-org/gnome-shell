@@ -111,6 +111,8 @@ Requires:       caribou%{?_isa} >= %{caribou_version}
 Requires:       accountsservice-libs%{?_isa}
 Requires:       gdm-libs%{?_isa}
 Requires:       clutter%{?_isa} >= %{clutter_version}
+# needed for screen recording
+Requires:       gstreamer1-plugins-good
 
 %description
 GNOME Shell provides core user interface functions for the GNOME 3 desktop,
