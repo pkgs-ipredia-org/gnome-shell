@@ -1,6 +1,6 @@
 Name:           gnome-shell
 Version:        3.8.2
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Window management and application launching for GNOME
 
 Group:          User Interface/Desktops
@@ -79,7 +79,6 @@ Requires:       gnome-bluetooth%{?_isa} >= %{gnome_bluetooth_version}
 %endif
 Requires:       gnome-desktop3 >= %{gnome_desktop_version}
 Requires:       gnome-menus%{?_isa} >= %{gnome_menus_version}
-Requires:       gnome-session-xsession
 # wrapper script uses to restart old GNOME session if run --replace
 # from the command line
 Requires:       gobject-introspection%{?_isa} >= %{gobject_introspection_version}
@@ -184,6 +183,10 @@ glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas &> /dev/null 
 %exclude %{_datadir}/gtk-doc
 
 %changelog
+* Wed May 22 2013 Matthias Clasen <mclasen@redhat.com> - 3.8.2-3
+- Drop the gnome-session-xsession dependency again, it
+  has unwanted side-effects on eg soas
+
 * Tue May 14 2013 Florian Müllner <fmuellner@redhat.com> - 3.8.2-2
 - Include upstream fix for bug #962876
 
