@@ -1,0 +1,11 @@
+diff -up gnome-shell-3.9.92/configure.ac.foo gnome-shell-3.9.92/configure.ac
+--- gnome-shell-3.9.92/configure.ac.foo	2013-09-18 14:04:21.060456840 -0400
++++ gnome-shell-3.9.92/configure.ac	2013-09-18 13:53:06.467425301 -0400
+@@ -97,6 +97,7 @@ SHARED_PCS="gio-unix-2.0 >= $GIO_MIN_VER
+ 
+ PKG_CHECK_MODULES(GNOME_SHELL, $SHARED_PCS)
+ PKG_CHECK_MODULES(MUTTER, libmutter >= $MUTTER_MIN_VERSION)
++PKG_CHECK_MODULES(MUTTER_WAYLAND, libmutter-wayland >= $MUTTER_MIN_VERSION)
+ PKG_CHECK_MODULES(MUTTER_WAYLAND, [libmutter-wayland >= $MUTTER_MIN_VERSION],
+                  [MUTTER_WAYLAND_TYPELIB_DIR=`$PKG_CONFIG --variable=typelibdir libmutter-wayland`
+                   AC_SUBST(MUTTER_WAYLAND_TYPELIB_DIR)
