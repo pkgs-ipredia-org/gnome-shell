@@ -13,8 +13,6 @@ Source0:        http://download.gnome.org/sources/gnome-shell/3.9/%{name}-%{vers
 # Replace Epiphany with Firefox in the default favourite apps list
 Patch1: gnome-shell-favourite-apps-firefox.patch
 
-Patch2: foo.patch
-
 %define clutter_version 1.13.4
 %define gnome_bluetooth_version 1:3.9.0
 %define gobject_introspection_version 0.10.1
@@ -117,9 +115,6 @@ easy to use experience.
 %prep
 %setup -q
 %patch1 -p1 -b .firefox
-%patch2 -p1 -b .foo
-
-autoreconf -i -f
 
 %build
 (if ! test -x configure; then NOCONFIGURE=1 ./autogen.sh; fi;
