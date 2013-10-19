@@ -18,6 +18,8 @@ Patch2: Mirror-Evolution-calendar-settings-into-our-own-sche.patch
 Patch3: autorun-add-a-notification-when-unmounting-drives.patch
 # https://bugzilla.redhat.com/show_bug.cgi?id=810040
 Patch4: fix-fingerprint.patch
+# IprediaOS favourite apps list
+Patch20: gnome-shell-favourite-apps-iprediaos.patch
 
 %define clutter_version 1.9.16
 %define gobject_introspection_version 0.10.1
@@ -96,6 +98,7 @@ easy to use experience.
 %patch2 -p1 -b .mirror-schemas
 %patch3 -p1 -b .autorun
 %patch4 -p1 -b .fix-fingerprint
+%patch20 -p1 -b .iprediaos-favourite-apps
 
 rm configure
 
