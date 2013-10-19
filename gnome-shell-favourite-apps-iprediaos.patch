@@ -1,0 +1,25 @@
+From 1e70cd5686e2eb395e6904058b61f96d9c2db2cd Mon Sep 17 00:00:00 2001
+From: Mattias Ohlsson <mattias.ohlsson@inprose.com>
+Date: Sat, 19 Oct 2013 23:52:47 +0200
+Subject: [PATCH] change favourite-apps
+
+---
+ data/org.gnome.shell.gschema.xml.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/data/org.gnome.shell.gschema.xml.in b/data/org.gnome.shell.gschema.xml.in
+index 5d41198..121377f 100644
+--- a/data/org.gnome.shell.gschema.xml.in
++++ b/data/org.gnome.shell.gschema.xml.in
+@@ -32,7 +32,7 @@
+       </_description>
+     </key>
+     <key name="favorite-apps" type="as">
+-      <default>[ 'firefox.desktop', 'evolution.desktop', 'empathy.desktop', 'rhythmbox.desktop', 'shotwell.desktop', 'libreoffice-writer.desktop', 'nautilus.desktop', 'gnome-documents.desktop' ]</default>
++      <default>[ 'firefox.desktop', 'i2p-router-console.desktop', 'rhythmbox.desktop', 'nautilus.desktop', 'evolution.desktop', 'xchat.desktop', 'gnome-documents.desktop' ]</default>
+       <_summary>List of desktop file IDs for favorite applications</_summary>
+       <_description>
+         The applications corresponding to these identifiers
+-- 
+1.7.11.7
+
