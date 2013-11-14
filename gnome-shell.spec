@@ -13,6 +13,8 @@ Source0:        http://download.gnome.org/sources/gnome-shell/3.10/%{name}-%{ver
 # Replace Epiphany with Firefox in the default favourite apps list
 Patch1: gnome-shell-favourite-apps-firefox.patch
 
+Patch10: 0001-build-Lower-mutter-requirement.patch
+
 %define clutter_version 1.13.4
 %define gnome_bluetooth_version 1:3.9.0
 %define gobject_introspection_version 0.10.1
@@ -116,6 +118,8 @@ easy to use experience.
 %setup -q
 %patch1 -p1 -b .firefox
 
+%patch10 -p1 -b .fix-wayland-build
+
 %build
 (if ! test -x configure; then NOCONFIGURE=1 ./autogen.sh; fi;
  %configure --disable-static --disable-compile-warnings)
@@ -176,6 +180,7 @@ glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas &> /dev/null 
 %changelog
 * Thu Nov 14 2013 Florian Müllner <fmuellner@redhat.com> - 3.10.2-1
 - Update to 3.10.2
+- Include downstream patch to fix wayland build
 
 * Wed Oct 30 2013 Florian Müllner <fmuellner@redhat.com> - 3.10.1-2
 - Backport upstream patch to fix user list overflow on login screen

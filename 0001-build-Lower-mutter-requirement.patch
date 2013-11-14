@@ -1,0 +1,27 @@
+From beeb42925e94f6976d4f04dd4c54fe8a61f564ff Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Florian=20M=C3=BCllner?= <fmuellner@gnome.org>
+Date: Thu, 14 Nov 2013 13:48:18 +0000
+Subject: [PATCH] build: Lower mutter requirement
+
+We don't have a mutter-wayland release for 3.10, so lower the
+requirement to not end up without wayland support.
+---
+ configure.ac | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/configure.ac b/configure.ac
+index c451c46..b4379ed 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -60,7 +60,7 @@ AM_CONDITIONAL(BUILD_RECORDER, $build_recorder)
+ CLUTTER_MIN_VERSION=1.13.4
+ GOBJECT_INTROSPECTION_MIN_VERSION=0.10.1
+ GJS_MIN_VERSION=1.38.1
+-MUTTER_MIN_VERSION=3.10.2
++MUTTER_MIN_VERSION=3.10.1
+ GTK_MIN_VERSION=3.7.9
+ GIO_MIN_VERSION=2.37.0
+ LIBECAL_MIN_VERSION=3.5.3
+-- 
+1.8.4.2
+
