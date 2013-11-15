@@ -1,6 +1,6 @@
 Name:           gnome-shell
 Version:        3.8.4
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Window management and application launching for GNOME
 
 Group:          User Interface/Desktops
@@ -14,6 +14,8 @@ Source0:        http://download.gnome.org/sources/gnome-shell/3.8/%{name}-%{vers
 Patch1: gnome-shell-favourite-apps-firefox.patch
 # https://bugzilla.gnome.org/show_bug.cgi?id=704646
 Patch2: 0001-Revert-background-fix-asynchronous-management-of-bac.patch
+
+Patch3: 0001-main-Close-runDialog-as-necessary-on-session-mode-ch.patch
 
 %define clutter_version 1.13.4
 %define gnome_bluetooth_version 3.5.5
@@ -182,6 +184,9 @@ glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas &> /dev/null 
 %exclude %{_datadir}/gtk-doc
 
 %changelog
+* Fri Nov 15 2013 Florian Müllner <fmuellner@redhat.com> - 3.8.4-3
+- Backport upstream fix to prevent showing the run dialog on the lock screen
+
 * Thu Aug 15 2013 Adel Gadllah <adel.gadllah@gmail.com> - 3.8.4-2
 - Backport upstream commit that fixes lookups and other
   background issues

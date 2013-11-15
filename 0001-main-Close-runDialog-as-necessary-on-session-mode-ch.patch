@@ -1,0 +1,36 @@
+From d1eb56f4ad154f8bada35b5b9d13fbdb325be1a6 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Florian=20M=C3=BCllner?= <fmuellner@gnome.org>
+Date: Wed, 18 Sep 2013 19:47:59 +0200
+Subject: [PATCH] main: Close runDialog as necessary on session mode changes
+
+We already do this for looking glass, but it makes even less sense
+for the normal run dialog - if a mode sets runDialog to false, the
+intention is to not allow executing aribitrary commands.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=708218
+---
+ js/ui/main.js | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/js/ui/main.js b/js/ui/main.js
+index bd5dc47..ff8cd2c 100644
+--- a/js/ui/main.js
++++ b/js/ui/main.js
+@@ -84,8 +84,12 @@ function _sessionUpdated() {
+                                   Shell.KeyBindingMode.OVERVIEW,
+                                   sessionMode.hasRunDialog ? openRunDialog : null);
+ 
+-    if (!sessionMode.hasRunDialog && lookingGlass)
+-        lookingGlass.close();
++    if (!sessionMode.hasRunDialog) {
++        if (runDialog)
++            runDialog.close();
++        if (lookingGlass)
++            lookingGlass.close();
++    }
+ }
+ 
+ function start() {
+-- 
+1.8.4.2
+
