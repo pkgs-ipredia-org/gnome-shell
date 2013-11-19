@@ -14,6 +14,7 @@ Source0:        http://download.gnome.org/sources/gnome-shell/3.10/%{name}-%{ver
 Patch1: gnome-shell-favourite-apps-firefox.patch
 
 Patch10: 0001-build-Lower-mutter-requirement.patch
+Patch11: 0001-messageTray-Prevent-reentrancy-issues-in-_updateStat.patch
 
 %define clutter_version 1.13.4
 %define gnome_bluetooth_version 1:3.9.0
@@ -119,6 +120,7 @@ easy to use experience.
 %patch1 -p1 -b .firefox
 
 %patch10 -p1 -b .fix-wayland-build
+%patch11 -p1 -b .fix-message-tray-reentrancy
 
 %build
 (if ! test -x configure; then NOCONFIGURE=1 ./autogen.sh; fi;
@@ -178,6 +180,9 @@ glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas &> /dev/null 
 %exclude %{_datadir}/gtk-doc
 
 %changelog
+* Tue Nov 19 2013 Florian Müllner <fmuellner@redhat.com> - 3.10.2-2
+- Backport upstream fix for message tray reentrancy
+
 * Thu Nov 14 2013 Florian Müllner <fmuellner@redhat.com> - 3.10.2-1
 - Update to 3.10.2
 - Include downstream patch to fix wayland build
