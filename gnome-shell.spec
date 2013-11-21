@@ -1,6 +1,6 @@
 Name:           gnome-shell
 Version:        3.10.2
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Window management and application launching for GNOME
 
 Group:          User Interface/Desktops
@@ -180,6 +180,9 @@ glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas &> /dev/null 
 %exclude %{_datadir}/gtk-doc
 
 %changelog
+* Thu Nov 21 2013 Milan Crha <mcrha@redhat.com> - 3.10.2-3
+- Rebuild for new libical (RH bug #1023020)
+
 * Tue Nov 19 2013 Florian Müllner <fmuellner@redhat.com> - 3.10.2-2
 - Backport upstream fix for message tray reentrancy
 
