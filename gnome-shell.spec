@@ -1,6 +1,6 @@
 Name:           gnome-shell
 Version:        3.10.2.1
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Window management and application launching for GNOME
 
 Group:          User Interface/Desktops
@@ -14,6 +14,7 @@ Source0:        http://download.gnome.org/sources/gnome-shell/3.10/%{name}-%{ver
 Patch1: gnome-shell-favourite-apps-firefox.patch
 
 Patch11: 0001-messageTray-Prevent-reentrancy-issues-in-_updateStat.patch
+Patch12: 0001-authPrompt-propagate-gdm-reset-signal-after-user-swi.patch
 
 %define clutter_version 1.13.4
 %define gnome_bluetooth_version 1:3.9.0
@@ -119,6 +120,7 @@ easy to use experience.
 %patch1 -p1 -b .firefox
 
 %patch11 -p1 -b .fix-message-tray-reentrancy
+%patch12 -p1 -b .fix-user-switch-bustification
 
 %build
 (if ! test -x configure; then NOCONFIGURE=1 ./autogen.sh; fi;
@@ -178,6 +180,10 @@ glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas &> /dev/null 
 %exclude %{_datadir}/gtk-doc
 
 %changelog
+* Mon Nov 25 2013 Ray Strode <rstrode@redhat.com> 3.10.2.1-2
+- Pull in user-switch fix from gnome bug #710456
+  Resolves: #1034031
+
 * Fri Nov 22 2013 Richard Hughes <rhughes@redhat.com> - 3.10.2.1-1
 - Update to 3.10.2.1
 

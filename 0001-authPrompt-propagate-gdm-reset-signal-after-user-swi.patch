@@ -1,0 +1,106 @@
+From b2f547e93452cb2d406263cd9bb8743760c28683 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Mon, 25 Nov 2013 22:30:53 -0500
+Subject: [PATCH] authPrompt: propagate gdm "reset" signal after user switching
+
+After a user types in their password at the login screen, one
+of two things can happen
+
+1) a new session is started
+2) an existing session is switched to
+
+In the latter case, GDM sends a reset signal to the login screen,
+so it knows to go back to the user list and wait to be summoned
+again.
+
+Unfortunately, all reset signals are ignored after verification
+success.  The reason is because the reset handler was copied from
+the unlock dialog as part of a deduplication effort in commit
+7e7295f259febf34c89659a9bcb05f9924fa1976 and the unlock dialog
+handler at the time also emitted a "failed" signal on reset
+(which wouldn't make sense to emit after success).
+
+These days "failed" is handled in a different way.
+
+This commit changes the code to let reset signals through after
+successful verification.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=710456
+---
+ js/gdm/authPrompt.js | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/js/gdm/authPrompt.js b/js/gdm/authPrompt.js
+index 1880e36..996b363 100644
+--- a/js/gdm/authPrompt.js
++++ b/js/gdm/authPrompt.js
+@@ -236,64 +236,62 @@ const AuthPrompt = new Lang.Class({
+         //                     2) Don't reset if we've already succeeded at verification and
+         //                        the user is getting logged in.
+         if (this._userVerifier.serviceIsDefault(GdmUtil.SMARTCARD_SERVICE_NAME) &&
+             this.verificationStatus == AuthPromptStatus.VERIFYING &&
+             this.smartcardDetected)
+             return;
+ 
+         if (this.verificationStatus != AuthPromptStatus.VERIFICATION_SUCCEEDED)
+             this.reset();
+     },
+ 
+     _onShowMessage: function(userVerifier, message, type) {
+         this.setMessage(message, type);
+         this.emit('prompted');
+     },
+ 
+     _onVerificationFailed: function() {
+         this._queryingService = null;
+         this.clear();
+ 
+         this.updateSensitivity(true);
+         this.setActorInDefaultButtonWell(null);
+         this.verificationStatus = AuthPromptStatus.VERIFICATION_FAILED;
+     },
+ 
+     _onVerificationComplete: function() {
+         this.verificationStatus = AuthPromptStatus.VERIFICATION_SUCCEEDED;
+     },
+ 
+     _onReset: function() {
+-        if (this.verificationStatus != AuthPromptStatus.VERIFICATION_SUCCEEDED) {
+-            this.verificationStatus = AuthPromptStatus.NOT_VERIFYING;
+-            this.reset();
+-        }
++        this.verificationStatus = AuthPromptStatus.NOT_VERIFYING;
++        this.reset();
+     },
+ 
+     addActorToDefaultButtonWell: function(actor) {
+         this._defaultButtonWell.add_child(actor);
+     },
+ 
+     setActorInDefaultButtonWell: function(actor, animate) {
+         if (!this._defaultButtonWellActor &&
+             !actor)
+             return;
+ 
+         let oldActor = this._defaultButtonWellActor;
+ 
+         if (oldActor)
+             Tweener.removeTweens(oldActor);
+ 
+         let isSpinner;
+         if (actor == this._spinner.actor)
+             isSpinner = true;
+         else
+             isSpinner = false;
+ 
+         if (this._defaultButtonWellActor != actor && oldActor) {
+             if (!animate) {
+                 oldActor.opacity = 0;
+             } else {
+                 Tweener.addTween(oldActor,
+                                  { opacity: 0,
+                                    time: DEFAULT_BUTTON_WELL_ANIMATION_TIME,
+                                    delay: DEFAULT_BUTTON_WELL_ANIMATION_DELAY,
+-- 
+1.8.3.1
+
