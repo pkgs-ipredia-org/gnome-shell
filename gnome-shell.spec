@@ -1,6 +1,6 @@
 Name:           gnome-shell
-Version:        3.10.2.1
-Release:        3%{?dist}
+Version:        3.10.3
+Release:        1%{?dist}
 Summary:        Window management and application launching for GNOME
 
 Group:          User Interface/Desktops
@@ -12,10 +12,6 @@ Source0:        http://download.gnome.org/sources/gnome-shell/3.10/%{name}-%{ver
 
 # Replace Epiphany with Firefox in the default favourite apps list
 Patch1: gnome-shell-favourite-apps-firefox.patch
-
-Patch11: 0001-messageTray-Prevent-reentrancy-issues-in-_updateStat.patch
-Patch12: 0001-authPrompt-propagate-gdm-reset-signal-after-user-swi.patch
-Patch13: 0001-catch-more-errors-on-extensions-enable-and-disable.patch
 
 %define clutter_version 1.13.4
 %define gnome_bluetooth_version 1:3.9.0
@@ -120,10 +116,6 @@ easy to use experience.
 %setup -q
 %patch1 -p1 -b .firefox
 
-%patch11 -p1 -b .fix-message-tray-reentrancy
-%patch12 -p1 -b .fix-user-switch-bustification
-%patch13 -p1 -b .catch-more-extension-errors
-
 %build
 (if ! test -x configure; then NOCONFIGURE=1 ./autogen.sh; fi;
  %configure --disable-static --disable-compile-warnings)
@@ -182,6 +174,9 @@ glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas &> /dev/null 
 %exclude %{_datadir}/gtk-doc
 
 %changelog
+* Thu Jan 16 2014 Florian Müllner <fmuellner@redhat.com> - 3.10.3-1
+- Update to 3.10.3, drop downstream patches
+
 * Thu Nov 28 2013 Florian Müllner <fmuellner@redhat.com> - 3.10.2.1-3
 - Backport upstream fix for catching more extension errors
 
