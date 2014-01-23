@@ -1,0 +1,246 @@
+From ac60ccc51ac1248af6d6429cf9a639aaad820f0a Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Florian=20M=C3=BCllner?= <fmuellner@gnome.org>
+Date: Fri, 17 Jan 2014 09:54:14 -0500
+Subject: [PATCH 1/5] switcherPopup: Fix spacing calculation for empty lists
+
+Without special-casing, our current spacing calculation results in
+negative size requests for empty lists, which will trigger a Clutter
+assert later.
+While the list is never supposed to be empty, bugs happen; crashing
+users' systems is the least graceful way of handling this, so don't
+do it.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=722434
+---
+ js/ui/switcherPopup.js | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/js/ui/switcherPopup.js b/js/ui/switcherPopup.js
+index e6036b0..b06be61 100644
+--- a/js/ui/switcherPopup.js
++++ b/js/ui/switcherPopup.js
+@@ -509,7 +509,7 @@ const SwitcherList = new Lang.Class({
+     _getPreferredWidth: function (actor, forHeight, alloc) {
+         let [maxChildMin, maxChildNat] = this._maxChildWidth(forHeight);
+ 
+-        let totalSpacing = this._list.spacing * (this._items.length - 1);
++        let totalSpacing = Math.max(this._list.spacing * (this._items.length - 1), 0);
+         alloc.min_size = this._items.length * maxChildMin + totalSpacing;
+         alloc.natural_size = alloc.min_size;
+         this._minSize = alloc.min_size;
+@@ -539,7 +539,7 @@ const SwitcherList = new Lang.Class({
+         let childHeight = box.y2 - box.y1;
+ 
+         let [maxChildMin, maxChildNat] = this._maxChildWidth(childHeight);
+-        let totalSpacing = this._list.spacing * (this._items.length - 1);
++        let totalSpacing = Math.max(this._list.spacing * (this._items.length - 1), 0);
+ 
+         let childWidth = Math.floor(Math.max(0, box.x2 - box.x1 - totalSpacing) / this._items.length);
+ 
+-- 
+1.8.5.3
+
+
+From ce8c83f5123afab53a3ccfaf3659a166db9bf375 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Florian=20M=C3=BCllner?= <fmuellner@gnome.org>
+Date: Fri, 17 Jan 2014 10:54:13 -0500
+Subject: [PATCH 2/5] window-tracker: Always enable transient_for redirection
+
+It is possible to associate an application's window with a different
+application using the transient_for hint. However we currently only
+consider the hint in get_window_app() and not when making the original
+association, which opens the door to some confusing inconsistencies;
+for instance, get_window_app() will not necessarily return the same
+value for all windows retrieved via shell_app_get_windows().
+Fix this by looking at the transient_for hint when making the original
+association, not just in get_window_app().
+
+https://bugzilla.gnome.org/show_bug.cgi?id=722434
+---
+ src/shell-window-tracker.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/src/shell-window-tracker.c b/src/shell-window-tracker.c
+index cadeda2..d0d0a9a 100644
+--- a/src/shell-window-tracker.c
++++ b/src/shell-window-tracker.c
+@@ -384,8 +384,13 @@ get_app_for_window (ShellWindowTracker    *tracker,
+                     MetaWindow            *window)
+ {
+   ShellApp *result = NULL;
++  MetaWindow *transient_for;
+   const char *startup_id;
+ 
++  transient_for = meta_window_get_transient_for (window);
++  if (transient_for != NULL)
++    return get_app_for_window (tracker, transient_for);
++
+   /* First, we check whether we already know about this window,
+    * if so, just return that.
+    */
+@@ -681,13 +686,8 @@ ShellApp *
+ shell_window_tracker_get_window_app (ShellWindowTracker *tracker,
+                                      MetaWindow         *metawin)
+ {
+-  MetaWindow *transient_for;
+   ShellApp *app;
+ 
+-  transient_for = meta_window_get_transient_for (metawin);
+-  if (transient_for != NULL)
+-    metawin = transient_for;
+-
+   app = g_hash_table_lookup (tracker->window_to_app, metawin);
+   if (app)
+     g_object_ref (app);
+-- 
+1.8.5.3
+
+
+From ef79c129e23f7060a05aa23576561a0d4d0f056b Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Florian=20M=C3=BCllner?= <fmuellner@gnome.org>
+Date: Fri, 17 Jan 2014 10:05:09 -0500
+Subject: [PATCH 3/5] altTab: Always filter out items with no windows
+
+When restricting the switcher popup to the current workspace, we
+filter out running apps with an empty window list (namely: no open
+windows on the current workspace). However we may end up with an
+empty window list even when not restricting items to the current
+workspace when all windows of a running app are associated with a
+different application via the transient_for hint.
+To fix this, just filter out items with an empty window list
+unconditionally.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=722434
+---
+ js/ui/altTab.js | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/js/ui/altTab.js b/js/ui/altTab.js
+index 779ae7b..86b06c7 100644
+--- a/js/ui/altTab.js
++++ b/js/ui/altTab.js
+@@ -454,9 +454,10 @@ const AppSwitcher = new Lang.Class({
+             appIcon.cachedWindows = allWindows.filter(function(w) {
+                 return windowTracker.get_window_app (w) == appIcon.app;
+             });
+-            if (workspace == null || appIcon.cachedWindows.length > 0) {
++            if (appIcon.cachedWindows.length > 0)
+                 this._addIcon(appIcon);
+-            }
++            else if (workspace == null)
++                throw new Error('%s appears to be running, but doesn\'t have any windows'.format(appIcon.app.get_name()));
+         }
+ 
+         this._curApp = -1;
+-- 
+1.8.5.3
+
+
+From 223e15a775468f092710df27e7b3b8c01aebd3c7 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Florian=20M=C3=BCllner?= <fmuellner@gnome.org>
+Date: Wed, 22 Jan 2014 11:51:25 -0500
+Subject: [PATCH 4/5] shell-app: Base running state on "interesting" windows
+
+An app should be considered running if it has at least one "interesting"
+window, however the code considers an app running if it has at least
+one tracked window. This was fine while we were only tracking interesting
+windows, but since commit d21aa0d85fc325 this is no longer the case.
+So keep track of the number of interesting windows as well and use that
+to determine the running state.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=722690
+---
+ src/shell-app.c | 13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/src/shell-app.c b/src/shell-app.c
+index 0a919b9..20a2e24 100644
+--- a/src/shell-app.c
++++ b/src/shell-app.c
+@@ -36,6 +36,8 @@ typedef struct {
+ 
+   GSList *windows;
+ 
++  guint interesting_windows;
++
+   /* Whether or not we need to resort the windows; this is done on demand */
+   gboolean window_sort_stale : 1;
+ 
+@@ -1034,7 +1036,11 @@ _shell_app_add_window (ShellApp        *app,
+   shell_app_update_app_menu (app, window);
+   shell_app_ensure_busy_watch (app);
+ 
+-  if (app->state != SHELL_APP_STATE_STARTING)
++  if (shell_window_tracker_is_window_interesting (window))
++    app->running_state->interesting_windows++;
++
++  if (app->state != SHELL_APP_STATE_STARTING &&
++      app->running_state->interesting_windows > 0)
+     shell_app_state_transition (app, SHELL_APP_STATE_RUNNING);
+ 
+   g_object_thaw_notify (G_OBJECT (app));
+@@ -1056,7 +1062,10 @@ _shell_app_remove_window (ShellApp   *app,
+   g_object_unref (window);
+   app->running_state->windows = g_slist_remove (app->running_state->windows, window);
+ 
+-  if (app->running_state->windows == NULL)
++  if (shell_window_tracker_is_window_interesting (window))
++    app->running_state->interesting_windows--;
++
++  if (app->running_state->interesting_windows == 0)
+     shell_app_state_transition (app, SHELL_APP_STATE_STOPPED);
+ 
+   g_signal_emit (app, shell_app_signals[WINDOWS_CHANGED], 0);
+-- 
+1.8.5.3
+
+
+From d665fa338d61e79958defa84f5bc026239ca0721 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Florian=20M=C3=BCllner?= <fmuellner@gnome.org>
+Date: Thu, 23 Jan 2014 11:51:44 -0500
+Subject: [PATCH 5/5] shell-app: Unref running state when window count drops to
+ zero
+
+With the lastest ShellApp changes, an app is considered stopped
+when the last "interesting" window is closed. However the app
+may still track non-interesting windows, so if we unref the
+running state on the state transition, we hit an assertion later-on
+when trying to remove the non-interesting window.
+Fix this by keeping the running state around until the last window
+is closed.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=722840
+---
+ src/shell-app.c | 9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
+
+diff --git a/src/shell-app.c b/src/shell-app.c
+index 20a2e24..30ea6b8 100644
+--- a/src/shell-app.c
++++ b/src/shell-app.c
+@@ -901,12 +901,6 @@ shell_app_state_transition (ShellApp      *app,
+                       state == SHELL_APP_STATE_STARTING));
+   app->state = state;
+ 
+-  if (app->state == SHELL_APP_STATE_STOPPED && app->running_state)
+-    {
+-      unref_running_state (app->running_state);
+-      app->running_state = NULL;
+-    }
+-
+   _shell_app_system_notify_app_state_changed (shell_app_system_get_default (), app);
+ 
+   g_object_notify (G_OBJECT (app), "state");
+@@ -1068,6 +1062,9 @@ _shell_app_remove_window (ShellApp   *app,
+   if (app->running_state->interesting_windows == 0)
+     shell_app_state_transition (app, SHELL_APP_STATE_STOPPED);
+ 
++  if (app->running_state && app->running_state->windows == NULL)
++    g_clear_pointer (&app->running_state, unref_running_state);
++
+   g_signal_emit (app, shell_app_signals[WINDOWS_CHANGED], 0);
+ }
+ 
+-- 
+1.8.5.3
+
