@@ -1,0 +1,158 @@
+From 64b31e9770b4a7470f67b40398f9245ca59d0076 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Florian=20M=C3=BCllner?= <fmuellner@gnome.org>
+Date: Thu, 30 Jan 2014 16:42:08 +0100
+Subject: [PATCH 1/2] window-tracker: Use MetaWindow:skip-taskbar
+
+The code from shell_window_tracker_is_window_interesting() is equivalent
+of MetaWindow's skip-taskbar property, so use it to avoid code duplication.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=723308
+---
+ src/shell-window-tracker.c | 32 +-------------------------------
+ 1 file changed, 1 insertion(+), 31 deletions(-)
+
+diff --git a/src/shell-window-tracker.c b/src/shell-window-tracker.c
+index d0d0a9a..f00dadf 100644
+--- a/src/shell-window-tracker.c
++++ b/src/shell-window-tracker.c
+@@ -144,37 +144,7 @@ shell_window_tracker_class_init (ShellWindowTrackerClass *klass)
+ gboolean
+ shell_window_tracker_is_window_interesting (MetaWindow *window)
+ {
+-  if (meta_window_is_override_redirect (window)
+-      || meta_window_is_skip_taskbar (window))
+-    return FALSE;
+-
+-  switch (meta_window_get_window_type (window))
+-    {
+-      /* Definitely ignore these. */
+-      case META_WINDOW_DESKTOP:
+-      case META_WINDOW_DOCK:
+-      case META_WINDOW_SPLASHSCREEN:
+-      /* Should have already been handled by override_redirect above,
+-       * but explicitly list here so we get the "unhandled enum"
+-       * warning if in the future anything is added.*/
+-      case META_WINDOW_DROPDOWN_MENU:
+-      case META_WINDOW_POPUP_MENU:
+-      case META_WINDOW_TOOLTIP:
+-      case META_WINDOW_NOTIFICATION:
+-      case META_WINDOW_COMBO:
+-      case META_WINDOW_DND:
+-      case META_WINDOW_OVERRIDE_OTHER:
+-        return FALSE;
+-      case META_WINDOW_NORMAL:
+-      case META_WINDOW_DIALOG:
+-      case META_WINDOW_MODAL_DIALOG:
+-      case META_WINDOW_MENU:
+-      case META_WINDOW_TOOLBAR:
+-      case META_WINDOW_UTILITY:
+-        break;
+-    }
+-
+-  return TRUE;
++  return !meta_window_is_skip_taskbar (window);
+ }
+ 
+ /*
+-- 
+1.8.5.3
+
+
+From a5a4b968b2c81899d238de2985751c676759cf6e Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Florian=20M=C3=BCllner?= <fmuellner@gnome.org>
+Date: Thu, 30 Jan 2014 17:33:36 +0100
+Subject: [PATCH 2/2] shell-app: Track changes to MetaWindow:skip-taskbar
+
+So far we have assumed that whether or not a window is interesting
+is static. In general this is the case, but as it is legal for the
+underlying properties to change at any time, there are of course
+offenders that actually do this (flash I'm looking at ya).
+While we used the property to determine whether a window should be
+tracked or not, the worst case was showing windows that should be
+hidden or missing windows that should be shown.
+However as we nowadays base an app's running state on the number of
+interesting windows, we need to be more careful in order to avoid
+ending up with running apps with no windows.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=723308
+---
+ src/shell-app.c | 38 +++++++++++++++++++++++++++++++-------
+ 1 file changed, 31 insertions(+), 7 deletions(-)
+
+diff --git a/src/shell-app.c b/src/shell-app.c
+index 30ea6b8..a54919d 100644
+--- a/src/shell-app.c
++++ b/src/shell-app.c
+@@ -931,6 +931,33 @@ shell_app_on_user_time_changed (MetaWindow *window,
+ }
+ 
+ static void
++shell_app_maybe_start_stop (ShellApp *app)
++{
++  g_return_if_fail (app->running_state != NULL);
++
++  if (app->running_state->interesting_windows == 0)
++    shell_app_state_transition (app, SHELL_APP_STATE_STOPPED);
++  else if (app->state != SHELL_APP_STATE_STARTING)
++    shell_app_state_transition (app, SHELL_APP_STATE_RUNNING);
++}
++
++
++static void
++shell_app_on_skip_taskbar_changed (MetaWindow *window,
++                                   GParamSpec *pspec,
++                                   ShellApp   *app)
++{
++  g_assert (app->running_state != NULL);
++
++  if (meta_window_is_skip_taskbar (window))
++    app->running_state->interesting_windows--;
++  else
++    app->running_state->interesting_windows++;
++
++  shell_app_maybe_start_stop (app);
++}
++
++static void
+ shell_app_on_ws_switch (MetaScreen         *screen,
+                         int                 from,
+                         int                 to,
+@@ -1026,16 +1053,14 @@ _shell_app_add_window (ShellApp        *app,
+   app->running_state->windows = g_slist_prepend (app->running_state->windows, g_object_ref (window));
+   g_signal_connect (window, "unmanaged", G_CALLBACK(shell_app_on_unmanaged), app);
+   g_signal_connect (window, "notify::user-time", G_CALLBACK(shell_app_on_user_time_changed), app);
++  g_signal_connect (window, "notify::skip-taskbar", G_CALLBACK(shell_app_on_skip_taskbar_changed), app);
+ 
+   shell_app_update_app_menu (app, window);
+   shell_app_ensure_busy_watch (app);
+ 
+   if (shell_window_tracker_is_window_interesting (window))
+     app->running_state->interesting_windows++;
+-
+-  if (app->state != SHELL_APP_STATE_STARTING &&
+-      app->running_state->interesting_windows > 0)
+-    shell_app_state_transition (app, SHELL_APP_STATE_RUNNING);
++  shell_app_maybe_start_stop (app);
+ 
+   g_object_thaw_notify (G_OBJECT (app));
+ 
+@@ -1053,14 +1078,13 @@ _shell_app_remove_window (ShellApp   *app,
+ 
+   g_signal_handlers_disconnect_by_func (window, G_CALLBACK(shell_app_on_unmanaged), app);
+   g_signal_handlers_disconnect_by_func (window, G_CALLBACK(shell_app_on_user_time_changed), app);
++  g_signal_handlers_disconnect_by_func (window, G_CALLBACK(shell_app_on_skip_taskbar_changed), app);
+   g_object_unref (window);
+   app->running_state->windows = g_slist_remove (app->running_state->windows, window);
+ 
+   if (shell_window_tracker_is_window_interesting (window))
+     app->running_state->interesting_windows--;
+-
+-  if (app->running_state->interesting_windows == 0)
+-    shell_app_state_transition (app, SHELL_APP_STATE_STOPPED);
++  shell_app_maybe_start_stop (app);
+ 
+   if (app->running_state && app->running_state->windows == NULL)
+     g_clear_pointer (&app->running_state, unref_running_state);
+-- 
+1.8.5.3
+

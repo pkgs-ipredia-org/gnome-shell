@@ -1,6 +1,6 @@
 Name:           gnome-shell
 Version:        3.10.3
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Window management and application launching for GNOME
 
 Group:          User Interface/Desktops
@@ -14,6 +14,8 @@ Source0:        http://download.gnome.org/sources/gnome-shell/3.10/%{name}-%{ver
 Patch1: gnome-shell-favourite-apps-firefox.patch
 
 Patch10: fix-app-switcher-regressions.patch
+Patch11: track-skip-taskbar-changes.patch
+Patch12: 0001-window-tracker-Be-more-cautious-when-setting-focus-a.patch
 
 %define clutter_version 1.13.4
 %define gnome_bluetooth_version 1:3.9.0
@@ -119,6 +121,8 @@ easy to use experience.
 %patch1 -p1 -b .firefox
 
 %patch10 -p1 -b .fix-app-switcher
+%patch11 -p1 -b .track-skip-taskbar-changes
+%patch12 -p1 -b .fix-app-menu
 
 %build
 (if ! test -x configure; then NOCONFIGURE=1 ./autogen.sh; fi;
@@ -178,6 +182,11 @@ glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas &> /dev/null 
 %exclude %{_datadir}/gtk-doc
 
 %changelog
+* Fri Jan 31 2014 Florian Müllner <fmuellner@redhat.com> - 3.10.3-3
+- Backport upstream fixes:
+ - Fix app-menu regression (#1057517)
+ - Fix window tracking regression (#1057933)
+
 * Thu Jan 23 2014 Florian Müllner <fmuellner@redhat.com> - 3.10.3-2
 - Fix app-switcher regressions introduced by the last update
 

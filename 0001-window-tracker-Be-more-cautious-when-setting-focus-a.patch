@@ -1,0 +1,41 @@
+From c16bcbd90c4a2e47a0ffa50cfbb9d606086c9cfd Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Florian=20M=C3=BCllner?= <fmuellner@gnome.org>
+Date: Fri, 24 Jan 2014 10:26:49 -0500
+Subject: [PATCH] window-tracker: Be more cautious when setting focus app
+
+Since we started tracking non-interesting windows, we can no longer
+assume that if we manage to find an app associated with the focus window,
+it should appear focused - we now can find apps for docks, the DESKTOP
+window etc.
+To restore the old behavior, make sure that the focus window or one of
+its parents is "interesting".
+
+https://bugzilla.gnome.org/show_bug.cgi?id=722928
+---
+ src/shell-window-tracker.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/src/shell-window-tracker.c b/src/shell-window-tracker.c
+index f00dadf..deba560 100644
+--- a/src/shell-window-tracker.c
++++ b/src/shell-window-tracker.c
+@@ -445,6 +445,16 @@ update_focus_app (ShellWindowTracker *self)
+   ShellApp *new_focus_app;
+ 
+   new_focus_win = meta_display_get_focus_window (shell_global_get_display (shell_global_get ()));
++
++  /* we only consider an app focused if the focus window can be clearly
++   * associated with a running app; this is the case if the focus window
++   * or one of its parents is visible in the taskbar, e.g.
++   *   - 'nautilus' should appear focused when its about dialog has focus
++   *   - 'nautilus' should not appear focused when the DESKTOP has focus
++   */
++  while (new_focus_win && meta_window_is_skip_taskbar (new_focus_win))
++    new_focus_win = meta_window_get_transient_for (new_focus_win);
++
+   new_focus_app = new_focus_win ? shell_window_tracker_get_window_app (self, new_focus_win) : NULL;
+ 
+   if (new_focus_app)
+-- 
+1.8.5.3
+
