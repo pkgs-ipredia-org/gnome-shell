@@ -1,0 +1,36 @@
+From a5370ce3bd9092d0909e1f00dc9f1b53ebe40e37 Mon Sep 17 00:00:00 2001
+From: "Jasper St. Pierre" <jstpierre@mecheye.net>
+Date: Tue, 28 Jan 2014 16:47:23 -0500
+Subject: [PATCH] shell-app: Don't crash when trying to dispose
+
+If we dispose a ShellApp that has windows left, then we'll crash
+when we remove the last window, as that frees and NULLs out
+app->running_state.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=723197
+---
+ src/shell-app.c | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
+
+diff --git a/src/shell-app.c b/src/shell-app.c
+index 99f51ed..f5b647c 100644
+--- a/src/shell-app.c
++++ b/src/shell-app.c
+@@ -1590,11 +1590,9 @@ shell_app_dispose (GObject *object)
+       app->entry = NULL;
+     }
+ 
+-  if (app->running_state)
+-    {
+-      while (app->running_state->windows)
+-        _shell_app_remove_window (app, app->running_state->windows->data);
+-    }
++  while (app->running_state)
++    _shell_app_remove_window (app, app->running_state->windows->data);
++
+   /* We should have been transitioned when we removed all of our windows */
+   g_assert (app->state == SHELL_APP_STATE_STOPPED);
+   g_assert (app->running_state == NULL);
+-- 
+1.8.5.3
+
