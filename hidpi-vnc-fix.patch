@@ -1,0 +1,60 @@
+From e5c982351f3e47824194262733586fa4fd7e47f5 Mon Sep 17 00:00:00 2001
+From: Adel Gadllah <adel.gadllah@gmail.com>
+Date: Mon, 17 Feb 2014 13:34:42 +0100
+Subject: [PATCH 1/2] layout: Protect against broken monitor size reports
+
+VNC / XRDP reports nonsensial (i.e 0) monitor dimensions causing us to
+end up with a dpi of "Infinity" and thus scale even though we shouldn't.
+
+https://bugzilla.redhat.com/show_bug.cgi?id=1065788
+---
+ js/ui/layout.js | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/js/ui/layout.js b/js/ui/layout.js
+index ab03f51..c68ba9d 100644
+--- a/js/ui/layout.js
++++ b/js/ui/layout.js
+@@ -489,6 +489,12 @@ const LayoutManager = new Lang.Class({
+ 
+     _updateScaling: function() {
+         let primary = this.monitors[this.primaryIndex];
++        let width_mm = global.gdk_screen.get_monitor_width_mm(this.primaryIndex);
++        let height_mm = global.gdk_screen.get_monitor_height_mm(this.primaryIndex);
++        if (width_mm == 0 || height_mm == 0) {
++            St.ThemeContext.get_for_stage(global.stage).scale_factor = 1;
++            return;
++        }
+         let dpi_x = primary.width / (global.gdk_screen.get_monitor_width_mm(this.primaryIndex) / 25.4);
+         let dpi_y = primary.height / (global.gdk_screen.get_monitor_height_mm(this.primaryIndex) / 25.4);
+         if (dpi_x > HIGH_DPI_LIMIT && dpi_y > HIGH_DPI_LIMIT)
+-- 
+1.8.5.3
+
+From 03b46a551055cbffce12b89d6c2a58825fbfa15f Mon Sep 17 00:00:00 2001
+From: Adel Gadllah <adel.gadllah@gmail.com>
+Date: Mon, 17 Feb 2014 13:42:20 +0100
+Subject: [PATCH 2/2] layout: Don't query the monitor size twice
+
+---
+ js/ui/layout.js | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/js/ui/layout.js b/js/ui/layout.js
+index c68ba9d..59dcc03 100644
+--- a/js/ui/layout.js
++++ b/js/ui/layout.js
+@@ -495,8 +495,8 @@ const LayoutManager = new Lang.Class({
+             St.ThemeContext.get_for_stage(global.stage).scale_factor = 1;
+             return;
+         }
+-        let dpi_x = primary.width / (global.gdk_screen.get_monitor_width_mm(this.primaryIndex) / 25.4);
+-        let dpi_y = primary.height / (global.gdk_screen.get_monitor_height_mm(this.primaryIndex) / 25.4);
++        let dpi_x = primary.width / (width_mm / 25.4);
++        let dpi_y = primary.height / (height_mm / 25.4);
+         if (dpi_x > HIGH_DPI_LIMIT && dpi_y > HIGH_DPI_LIMIT)
+             St.ThemeContext.get_for_stage(global.stage).scale_factor = 2;
+         else
+-- 
+1.8.5.3
+
